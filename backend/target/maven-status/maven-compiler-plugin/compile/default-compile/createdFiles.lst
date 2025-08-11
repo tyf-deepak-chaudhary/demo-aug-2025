@@ -1,0 +1,6 @@
+com\bankapp\backend\BackendApplication.class
+com\bankapp\backend\controller\AuthController.class
+com\bankapp\backend\model\User.class
+com\bankapp\backend\dto\LoginRequest.class
+com\bankapp\backend\config\SecurityConfig.class
+com\bankapp\backend\repository\UserRepository.class
