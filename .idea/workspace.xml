@@ -34,6 +34,9 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Application.BackendApplication.executor": "Run",
+    "JUnit.BackendApplicationTests.executor": "Run",
+    "Maven.backend [-v].executor": "Run",
+    "Maven.backend [clean,install].executor": "Run",
     "Maven.backend [clean].executor": "Run",
     "Maven.backend [install].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
@@ -46,8 +49,10 @@
 }]]></component>
   <component name="RunAnythingCache">
     <option name="myCommands">
-      <command value="mvn clean" />
       <command value="mvn install" />
+      <command value="mvn -v" />
+      <command value="mvn clean" />
+      <command value="mvn clean install" />
     </option>
   </component>
   <component name="RunManager">

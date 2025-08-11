@@ -4,3 +4,4 @@ C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend
 C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\dto\LoginRequest.java
 C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\model\User.java
 C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\repository\UserRepository.java
+C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\service\JpaUserDetailsService.java
