@@ -15,13 +15,4 @@ public class BackendApplication {
         SpringApplication.run(BackendApplication.class, args);
     }
 
-    // Add this temporary bean to generate a password hash
-    @Bean
-    CommandLineRunner commandLineRunner(PasswordEncoder encoder) {
-        return args -> {
-            System.out.println("************************************************************");
-            System.out.println("BCrypt hash for 'password123': " + encoder.encode("password123"));
-            System.out.println("************************************************************");
-        };
-    }
 }
