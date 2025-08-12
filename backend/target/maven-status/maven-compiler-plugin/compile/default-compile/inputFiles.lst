@@ -1,7 +1,8 @@
-C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\BackendApplication.java
-C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\config\SecurityConfig.java
-C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\controller\AuthController.java
-C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\dto\LoginRequest.java
-C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\model\User.java
-C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\repository\UserRepository.java
-C:\Users\gowtham\Desktop\Bootcamp_proj\backend\src\main\java\com\bankapp\backend\service\JpaUserDetailsService.java
+C:\Users\deepak\Projects\demo-aug-2025\backend\src\main\java\com\bankapp\backend\BackendApplication.java
+C:\Users\deepak\Projects\demo-aug-2025\backend\src\main\java\com\bankapp\backend\config\SecurityConfig.java
+C:\Users\deepak\Projects\demo-aug-2025\backend\src\main\java\com\bankapp\backend\controller\AuthController.java
+C:\Users\deepak\Projects\demo-aug-2025\backend\src\main\java\com\bankapp\backend\dto\LoginRequest.java
+C:\Users\deepak\Projects\demo-aug-2025\backend\src\main\java\com\bankapp\backend\dto\RegisterRequest.java
+C:\Users\deepak\Projects\demo-aug-2025\backend\src\main\java\com\bankapp\backend\model\User.java
+C:\Users\deepak\Projects\demo-aug-2025\backend\src\main\java\com\bankapp\backend\repository\UserRepository.java
+C:\Users\deepak\Projects\demo-aug-2025\backend\src\main\java\com\bankapp\backend\service\JpaUserDetailsService.java

@@ -1,6 +1,7 @@
 package com.bankapp.backend.controller;
 
 import com.bankapp.backend.dto.LoginRequest;
+import com.bankapp.backend.dto.RegisterRequest;
 import com.bankapp.backend.model.User;
 import com.bankapp.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,4 +33,29 @@ public class AuthController {
         }
         return ResponseEntity.status(401).body(Map.of("message", "Invalid username or password"));
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
+        // Check if username exists
+        if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Username already exists"));
+        }
+
+        // Check if email exists
+        if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email already registered"));
+        }
+
+        // Create new user
+        User newUser = new User();
+        newUser.setUsername(registerRequest.getUsername());
+        newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword())); // Encrypt
+        newUser.setEmail(registerRequest.getEmail());
+
+        // Save
+        userRepository.save(newUser);
+
+        return ResponseEntity.ok(Map.of("message", "Registration successful!"));
+    }
+
 }
