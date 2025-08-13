@@ -175,7 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (response.ok) {
+                    const result = await response.json();
                     isSuccess = true;
+                    
+                    // Store user data in localStorage for dashboard
+                    localStorage.setItem('userId', result.userId);
+                    localStorage.setItem('username', username);
+                    
                     showToast('Login successful! Redirecting...', 'success');
                     // The path is changed from '/dashboard.html' to 'dashboard.html'
                     setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
