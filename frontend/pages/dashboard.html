@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Bank App</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1><i class="fas fa-university"></i> Bank Dashboard</h1>
+                <div class="user-info">
+                    <span id="welcomeMessage">Welcome, User!</span>
+                    <button id="logoutBtn" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Account Summary -->
+            <section class="account-summary">
+                <h2><i class="fas fa-chart-line"></i> Account Summary</h2>
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="card-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Total Accounts</h3>
+                            <p id="totalAccounts">0</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Total Balance</h3>
+                            <p id="totalBalance">$0.00</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Create Account Section -->
+            <section class="create-account-section">
+                <h2><i class="fas fa-plus-circle"></i> Create New Account</h2>
+                <form id="createAccountForm" class="create-account-form">
+                    <div class="form-group">
+                        <label for="accountName">Account Name</label>
+                        <input type="text" id="accountName" name="accountName" required placeholder="e.g., My Savings Account">
+                    </div>
+                    <div class="form-group">
+                        <label for="accountType">Account Type</label>
+                        <select id="accountType" name="accountType" required>
+                            <option value="">Select Account Type</option>
+                            <option value="SAVINGS">Savings</option>
+                            <option value="CHECKING">Checking</option>
+                            <option value="CREDIT">Credit</option>
+                            <option value="INVESTMENT">Investment</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="initialBalance">Initial Balance</label>
+                        <input type="number" id="initialBalance" name="initialBalance" min="0" step="0.01" required placeholder="0.00">
+                    </div>
+                    <button type="submit" class="create-btn">
+                        <i class="fas fa-plus"></i> Create Account
+                    </button>
+                </form>
+            </section>
+
+            <!-- Accounts List -->
+            <section class="accounts-section">
+                <h2><i class="fas fa-list"></i> Your Accounts</h2>
+                <div id="accountsList" class="accounts-list">
+                    <!-- Accounts will be loaded here dynamically -->
+                </div>
+                <div id="noAccountsMessage" class="no-accounts" style="display: none;">
+                    <i class="fas fa-info-circle"></i>
+                    <p>You don't have any accounts yet. Create your first account above!</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h3>
+            <p>Are you sure you want to delete this account? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button id="confirmDelete" class="delete-btn">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+                <button id="cancelDelete" class="cancel-btn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/dashboard.js"></script>
+</body>
+</html>
