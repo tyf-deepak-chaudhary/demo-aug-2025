@@ -2,12 +2,15 @@ package com.bankapp.backend.controller;
 
 import com.bankapp.backend.dto.AccountResponse;
 import com.bankapp.backend.dto.CreateAccountRequest;
+import com.bankapp.backend.dto.PinRequest;
 import com.bankapp.backend.model.Account;
 import com.bankapp.backend.model.User;
 import com.bankapp.backend.repository.AccountRepository;
 import com.bankapp.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder; // Import PasswordEncoder
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -28,20 +31,25 @@ public class AccountController {
     @Autowired
     private UserRepository userRepository;
 
+    // --- Inject the PasswordEncoder for hashing ---
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getUserAccounts(@PathVariable Integer userId) {
         try {
             List<Account> accounts = accountRepository.findByUserId(userId);
             List<AccountResponse> accountResponses = accounts.stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
-            
+                    .map(this::convertToListResponse)
+                    .collect(Collectors.toList());
+
             return ResponseEntity.ok(accountResponses);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Error fetching accounts: " + e.getMessage()));
         }
     }
 
+    // --- MODIFIED: Handles the new account-specific PIN ---
     @PostMapping("/create/{userId}")
     public ResponseEntity<?> createAccount(@PathVariable Integer userId, @RequestBody CreateAccountRequest request) {
         try {
@@ -50,39 +58,53 @@ public class AccountController {
                 return ResponseEntity.badRequest().body(Map.of("message", "User not found"));
             }
 
-            User user = userOptional.get();
-            
-            // Validate input
-            if (request.getAccountName() == null || request.getAccountName().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Account name is required"));
-            }
-            
-            if (request.getAccountType() == null || request.getAccountType().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Account type is required"));
+            // --- Validate the new PIN field from the request ---
+            if (request.getPin() == null || !request.getPin().matches("\\d{4}")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "A valid 4-digit PIN is required"));
             }
 
-            if (request.getInitialBalance() == null || request.getInitialBalance().compareTo(BigDecimal.ZERO) < 0) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Initial balance must be non-negative"));
-            }
-
-            // Create new account
             Account account = new Account();
             account.setAccountName(request.getAccountName().trim());
             account.setAccountType(request.getAccountType().trim().toUpperCase());
             account.setBalance(request.getInitialBalance());
-            account.setUser(user);
+            account.setUser(userOptional.get());
             account.setAccountNumber(generateAccountNumber());
 
-            // Save account
+            // --- Hash and set the PIN on the new account object ---
+            account.setPin(passwordEncoder.encode(request.getPin()));
+
             Account savedAccount = accountRepository.save(account);
-            
+
             return ResponseEntity.ok(Map.of(
-                "message", "Account created successfully!",
-                "account", convertToResponse(savedAccount)
+                    "message", "Account created successfully!",
+                    "account", convertToResponseWithBalance(savedAccount)
             ));
-            
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Error creating account: " + e.getMessage()));
+        }
+    }
+
+    // --- MODIFIED: Verifies PIN against the specific account ---
+    @PostMapping("/{accountId}/balance")
+    public ResponseEntity<?> getAccountBalance(@PathVariable Long accountId, @RequestBody PinRequest pinRequest) {
+        try {
+            Optional<Account> accountOptional = accountRepository.findById(accountId);
+            if (!accountOptional.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Account not found"));
+            }
+
+            Account account = accountOptional.get();
+
+            // --- Check PIN against the account's stored hash, not the user's ---
+            if (account.getPin() == null || !passwordEncoder.matches(pinRequest.getPin(), account.getPin())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid PIN for this account"));
+            }
+
+            return ResponseEntity.ok(Map.of("balance", account.getBalance()));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Error fetching balance: " + e.getMessage()));
         }
     }
 
@@ -96,13 +118,23 @@ public class AccountController {
 
             accountRepository.deleteById(accountId);
             return ResponseEntity.ok(Map.of("message", "Account deleted successfully!"));
-            
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Error deleting account: " + e.getMessage()));
         }
     }
 
-    private AccountResponse convertToResponse(Account account) {
+    private AccountResponse convertToListResponse(Account account) {
+        AccountResponse response = new AccountResponse();
+        response.setId(account.getId());
+        response.setAccountName(account.getAccountName());
+        response.setAccountType(account.getAccountType());
+        response.setAccountNumber(account.getAccountNumber());
+        response.setCreatedAt(account.getCreatedAt());
+        return response;
+    }
+
+    private AccountResponse convertToResponseWithBalance(Account account) {
         AccountResponse response = new AccountResponse();
         response.setId(account.getId());
         response.setAccountName(account.getAccountName());

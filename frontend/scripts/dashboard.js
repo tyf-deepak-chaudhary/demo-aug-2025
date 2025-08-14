@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const welcomeMessage = document.getElementById('welcomeMessage');
     const totalAccountsEl = document.getElementById('totalAccounts');
-    const totalBalanceEl = document.getElementById('totalBalance');
     const createAccountForm = document.getElementById('createAccountForm');
     const accountsList = document.getElementById('accountsList');
     const noAccountsMessage = document.getElementById('noAccountsMessage');
@@ -16,59 +15,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmDeleteBtn = document.getElementById('confirmDelete');
     const cancelDeleteBtn = document.getElementById('cancelDelete');
 
-    // Initialize dashboard
     init();
 
     function init() {
-        // Get user ID from localStorage (set during login)
         currentUserId = localStorage.getItem('userId');
         const username = localStorage.getItem('username');
 
         if (!currentUserId) {
-            // Redirect to login if no user ID found
             window.location.href = 'login.html';
             return;
         }
 
-        // Update welcome message
         if (username) {
             welcomeMessage.textContent = `Welcome, ${username}!`;
         }
 
-        // Load user accounts
+        updateSummary(0);
         loadUserAccounts();
-
-        // Set up event listeners
         setupEventListeners();
     }
 
     function setupEventListeners() {
-        // Create account form submission
         createAccountForm.addEventListener('submit', handleCreateAccount);
-
-        // Logout button
         logoutBtn.addEventListener('click', handleLogout);
-
-        // Modal event listeners
         confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
         cancelDeleteBtn.addEventListener('click', hideDeleteModal);
         deleteModal.addEventListener('click', (e) => {
-            if (e.target === deleteModal) {
-                hideDeleteModal();
-            }
+            if (e.target === deleteModal) hideDeleteModal();
         });
+        accountsList.addEventListener('click', handleAccountAction);
     }
 
     async function loadUserAccounts() {
         try {
             const response = await fetch(`${API_BASE_URL}/accounts/user/${currentUserId}`);
-            
             if (response.ok) {
                 const accounts = await response.json();
                 displayAccounts(accounts);
-                updateSummary(accounts);
+                updateSummary(accounts.length);
             } else {
-                console.error('Failed to load accounts');
                 showToast('Failed to load accounts', 'error');
             }
         } catch (error) {
@@ -98,11 +83,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>Account #: ${account.accountNumber}</p>
                     <p>Created: ${formatDate(account.createdAt)}</p>
                 </div>
-                <div class="account-balance">
-                    $${parseFloat(account.balance).toFixed(2)}
+                <div class="account-balance-view">
+                    <div class="balance-view-container" data-account-id="${account.id}">
+                        <button class="view-balance-btn">View Balance</button>
+                    </div>
                 </div>
                 <div class="account-actions">
-                    <button class="delete-account-btn" onclick="showDeleteModal(${account.id})" title="Delete Account">
+                    <button class="delete-account-btn" data-account-id="${account.id}" title="Delete Account">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -110,14 +97,15 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
     }
 
-    function updateSummary(accounts) {
-        const totalAccounts = accounts.length;
-        const totalBalance = accounts.reduce((sum, account) => sum + parseFloat(account.balance), 0);
-
+    function updateSummary(totalAccounts) {
         totalAccountsEl.textContent = totalAccounts;
-        totalBalanceEl.textContent = `$${totalBalance.toFixed(2)}`;
+        const totalBalanceCard = document.getElementById('totalBalanceEl');
+        if (totalBalanceCard) {
+            totalBalanceCard.closest('.summary-card').style.display = 'none';
+        }
     }
 
+    // --- MODIFIED: handleCreateAccount now sends the account PIN ---
     async function handleCreateAccount(event) {
         event.preventDefault();
 
@@ -125,22 +113,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const accountData = {
             accountName: formData.get('accountName').trim(),
             accountType: formData.get('accountType'),
-            initialBalance: parseFloat(formData.get('initialBalance'))
+            initialBalance: parseFloat(formData.get('initialBalance')),
+            // --- Get the new PIN from the form ---
+            // IMPORTANT: You must add an input with name="accountPin" to your HTML form
+            pin: formData.get('accountPin')
         };
 
-        // Validate form data
-        if (!accountData.accountName || !accountData.accountType || accountData.initialBalance < 0) {
+        if (!accountData.accountName || !accountData.accountType || isNaN(accountData.initialBalance) || accountData.initialBalance < 0) {
             showToast('Please fill in all fields correctly', 'error');
+            return;
+        }
+
+        // --- Add client-side validation for the PIN ---
+        if (!accountData.pin || !/^\d{4}$/.test(accountData.pin)) {
+            showToast('You must set a valid 4-digit PIN for the account.', 'error');
             return;
         }
 
         try {
             const response = await fetch(`${API_BASE_URL}/accounts/create/${currentUserId}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(accountData)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(accountData) // The pin is now included
             });
 
             const result = await response.json();
@@ -148,13 +142,83 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 showToast('Account created successfully!', 'success');
                 createAccountForm.reset();
-                loadUserAccounts(); // Reload accounts
+                loadUserAccounts();
             } else {
                 showToast(result.message || 'Failed to create account', 'error');
             }
         } catch (error) {
             console.error('Error creating account:', error);
             showToast('Error creating account', 'error');
+        }
+    }
+
+    function handleAccountAction(event) {
+        const target = event.target;
+
+        if (target.matches('.view-balance-btn')) {
+            const container = target.closest('.balance-view-container');
+            showPinInput(container);
+        }
+
+        if (target.matches('.submit-pin-btn')) {
+            const container = target.closest('.balance-view-container');
+            const accountId = container.dataset.accountId;
+            const pinInput = container.querySelector('.pin-input');
+            verifyPinAndShowBalance(accountId, pinInput.value);
+        }
+
+        if(target.matches('.hide-balance-btn')){
+            const container = target.closest('.balance-view-container');
+            hideBalance(container);
+        }
+
+        if (target.closest('.delete-account-btn')) {
+            const accountId = target.closest('.delete-account-btn').dataset.accountId;
+            showDeleteModal(accountId);
+        }
+    }
+
+    function showPinInput(container) {
+        container.innerHTML = `
+            <div class="pin-entry">
+                <input type="password" class="pin-input" placeholder="Enter PIN" maxlength="4" />
+                <button class="submit-pin-btn">Go</button>
+            </div>
+        `;
+        container.querySelector('.pin-input').focus();
+    }
+
+    function hideBalance(container) {
+        container.innerHTML = `<button class="view-balance-btn">View Balance</button>`;
+    }
+
+    async function verifyPinAndShowBalance(accountId, pin) {
+        if (!pin || pin.length < 4) {
+            showToast('Please enter a valid 4-digit PIN', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/accounts/${accountId}/balance`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin })
+            });
+
+            const result = await response.json();
+            const container = document.querySelector(`.balance-view-container[data-account-id='${accountId}']`);
+
+            if (response.ok) {
+                container.innerHTML = `
+                    <p class="account-balance">$${parseFloat(result.balance).toFixed(2)}</p>
+                    <button class="hide-balance-btn">Hide</button>
+                `;
+            } else {
+                showToast(result.message || 'Invalid PIN', 'error');
+                showPinInput(container);
+            }
+        } catch (error) {
+            showToast('Error verifying PIN', 'error');
         }
     }
 
@@ -176,12 +240,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'DELETE'
             });
 
-            const result = await response.json();
-
             if (response.ok) {
                 showToast('Account deleted successfully!', 'success');
-                loadUserAccounts(); // Reload accounts
+                loadUserAccounts();
             } else {
+                const result = await response.json();
                 showToast(result.message || 'Failed to delete account', 'error');
             }
         } catch (error) {
@@ -193,11 +256,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleLogout() {
-        // Clear stored user data
         localStorage.removeItem('userId');
         localStorage.removeItem('username');
-        
-        // Redirect to login page
         window.location.href = 'login.html';
     }
 
@@ -224,12 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.textContent = message;
         toast.className = `toast ${type}`;
         toast.classList.add('show');
-
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
+        setTimeout(() => toast.classList.remove('show'), 3000);
     }
-
-    // Make showDeleteModal globally accessible for inline onclick handlers
-    window.showDeleteModal = showDeleteModal;
 });

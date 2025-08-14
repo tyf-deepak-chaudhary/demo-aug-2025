@@ -27,6 +27,11 @@ public class Account {
     @Column(nullable = false, unique = true)
     private String accountNumber;
 
+    // --- PIN field added to the Account entity ---
+    // This will store the hashed PIN for this specific account.
+    @Column(nullable = false)
+    private String pin;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

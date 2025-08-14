@@ -1,4 +1,3 @@
-/* Dashboard Styles */
 * {
     margin: 0;
     padding: 0;
@@ -234,15 +233,17 @@ body {
     gap: 1rem;
 }
 
+/* === MODIFIED .account-card FOR NEW LAYOUT === */
 .account-card {
     background: white;
     border: 2px solid #f3f4f6;
     border-radius: 12px;
     padding: 1.5rem;
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    /* Icon, Details, Balance View, Actions */
+    grid-template-columns: auto 1fr auto auto; 
     align-items: center;
-    gap: 1rem;
+    gap: 1.5rem;
     transition: all 0.3s ease;
 }
 
@@ -445,10 +446,99 @@ body {
     .account-card {
         grid-template-columns: 1fr;
         text-align: center;
+        gap: 1rem;
+    }
+
+    .account-details {
+        grid-row: 2;
+    }
+    .account-balance-view {
+        grid-row: 3;
+    }
+    .account-actions {
+        grid-row: 4;
+        justify-content: center;
     }
     
     .user-info {
         flex-direction: column;
         gap: 0.5rem;
     }
+}
+
+/* === NEW STYLES FOR PIN VERIFICATION UI === */
+
+.account-balance-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.balance-view-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.view-balance-btn, .hide-balance-btn {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.view-balance-btn:hover {
+    background: #4338ca;
+}
+
+.hide-balance-btn {
+    background: #6b7280;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+}
+
+.hide-balance-btn:hover {
+    background: #4b5563;
+}
+
+.pin-entry {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.pin-input {
+    width: 100px;
+    padding: 0.5rem;
+    border: 2px solid #d1d5db;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.pin-input:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.submit-pin-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.submit-pin-btn:hover {
+    background: #059669;
 }
